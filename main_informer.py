@@ -12,6 +12,7 @@ parser.add_argument('--model', type=str, required=True, default='informer',
 parser.add_argument('--data', type=str, required=True, default='ETTh1', help='data')
 parser.add_argument('--root_path', type=str, default='./data/ETT/', help='root path of the data file')
 parser.add_argument('--data_path', type=str, default='ETTh1.csv', help='data file')
+parser.add_argument('--data_miss_path', type=str, default='ETTh1_miss.csv', help='data miss file')
 parser.add_argument('--features', type=str, default='M',
                     help='forecasting task, options:[M, S, MS]; M:multivariate predict multivariate, S:univariate predict univariate, MS:multivariate predict univariate')
 parser.add_argument('--target', type=str, default='OT', help='target feature in S or MS task')
@@ -63,6 +64,12 @@ parser.add_argument('--use_gpu', type=bool, default=True, help='use gpu')
 parser.add_argument('--gpu', type=int, default=0, help='gpu')
 parser.add_argument('--use_multi_gpu', action='store_true', help='use multiple gpus', default=False)
 parser.add_argument('--devices', type=str, default='0,1,2,3', help='device ids of multile gpus')
+
+parser.add_argument('--time_seq_len', type=int, default=12, help='number of day stamp')
+parser.add_argument('--remove_col', type=str, default='date', help='remove col from dataset')
+parser.add_argument('--adj_alpha', type=float, default=0.3, help='Activation threshold')
+parser.add_argument('--node_num', type=int, default=7, help='node number')
+parser.add_argument('--node_category', type=int, default=3, help='node category')
 
 args = parser.parse_args()
 
@@ -118,7 +125,10 @@ for ii in range(args.itr):
                                                                                                          args.embed,
                                                                                                          args.distil,
                                                                                                          args.mix,
-                                                                                                         args.des, ii)
+                                                                                                         args.des,
+                                                                                                         args.node_num,
+                                                                                                         args.node_category,
+                                                                                                         ii)
 
     exp = Exp(args)  # set experiments
     print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))

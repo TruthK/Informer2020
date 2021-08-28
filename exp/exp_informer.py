@@ -1,8 +1,10 @@
+import pandas as pd
+
 from data.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_Pred
 from exp.exp_basic import Exp_Basic
-from models.model import Informer, InformerStack
+from models.model import *
 
-from utils.tools import EarlyStopping, adjust_learning_rate
+from utils.tools import EarlyStopping, adjust_learning_rate, generate_adaptive_matrix
 from utils.metrics import metric
 
 import numpy as np
@@ -25,9 +27,13 @@ class Exp_Informer(Exp_Basic):
         super(Exp_Informer, self).__init__(args)
 
     def _build_model(self):
+        df = pd.read_csv(os.path.join(self.args.root_path, self.args.data_path))
+        df = df.sample(10000)
+        self.adj = generate_adaptive_matrix(df, 0.3, 'date')
+        # self.adj=None
+        print(self.adj)
         model_dict = {
-            'informer': Informer,
-            'informerstack': InformerStack,
+            'informer': Informer
         }
         if self.args.model == 'informer' or self.args.model == 'informerstack':
             e_layers = self.args.e_layers if self.args.model == 'informer' else self.args.s_layers
@@ -52,7 +58,10 @@ class Exp_Informer(Exp_Basic):
                 self.args.output_attention,
                 self.args.distil,
                 self.args.mix,
-                self.device
+                self.device,
+                self.adj,
+                self.args.node_num,
+                self.args.node_category,
             ).float()
 
         if self.args.use_multi_gpu and self.args.use_gpu:
@@ -96,6 +105,7 @@ class Exp_Informer(Exp_Basic):
         data_set = Data(
             root_path=args.root_path,
             data_path=args.data_path,
+            data_miss_path=args.data_miss_path,
             flag=flag,
             size=[args.seq_len, args.label_len, args.pred_len],
             features=args.features,
