@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 import pandas as pd
 import torch
@@ -111,3 +113,19 @@ class StandardScaler():
         mean = torch.from_numpy(self.mean).type_as(data).to(data.device) if torch.is_tensor(data) else self.mean
         std = torch.from_numpy(self.std).type_as(data).to(data.device) if torch.is_tensor(data) else self.std
         return (data * std) + mean
+
+def init_seed(seed):
+    """Disable cudnn to maximize reproducibility 禁用cudnn以最大限度地提高再现性"""
+    torch.cuda.cudnn_enabled = False
+    """
+    cuDNN使用非确定性算法，并且可以使用torch.backends.cudnn.enabled = False来进行禁用
+    如果设置为torch.backends.cudnn.enabled =True，说明设置为使用使用非确定性算法
+    然后再设置：torch.backends.cudnn.benchmark = True，当这个flag为True时，将会让程序在开始时花费一点额外时间，
+    为整个网络的每个卷积层搜索最适合它的卷积实现算法，进而实现网络的加速
+    但由于其是使用非确定性算法，这会让网络每次前馈结果略有差异,如果想要避免这种结果波动，可以将下面的flag设置为True
+    """
+    torch.backends.cudnn.deterministic = True
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)

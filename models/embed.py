@@ -5,17 +5,17 @@ import math
 
 
 class PositionalEmbedding(nn.Module):
-    def __init__(self, d_model, adj, max_len=5000):
+    def __init__(self, d_model, max_len=5000):
         super(PositionalEmbedding, self).__init__()
 
-        if adj.numel() > 256:
-            self.adj = torch.flatten(torch.sum(adj, 0))
-        else:
-            self.adj = torch.flatten(adj)
-        repeat_time = int(d_model / self.adj.numel()) + 1
-        adj_div_term = self.adj.repeat(repeat_time)[:d_model / 2]
-        adj_div_term = adj_div_term / torch.max(adj_div_term)
-        term = torch.arange(0, d_model, 2).float() + adj_div_term
+        # if adj.numel() > 256:
+        #     self.adj = torch.flatten(torch.sum(adj, 0))
+        # else:
+        #     self.adj = torch.flatten(adj)
+        # repeat_time = int(d_model / self.adj.numel()) + 1
+        # adj_div_term = self.adj.repeat(repeat_time)[:d_model / 2]
+        # adj_div_term = adj_div_term / torch.max(adj_div_term)
+        term = torch.arange(0, d_model, 2).float()
         # Compute the positional encodings once in log space.
         pe = torch.zeros(max_len, d_model).float()
         pe.require_grad = False
@@ -37,14 +37,25 @@ class TokenEmbedding(nn.Module):
     def __init__(self, c_in, d_model):
         super(TokenEmbedding, self).__init__()
         padding = 1 if torch.__version__ >= '1.5.0' else 2
-        self.tokenConv = nn.Conv1d(in_channels=c_in, out_channels=d_model,
-                                   kernel_size=3, padding=padding, padding_mode='circular')
+        self.tokenConv1 = nn.Conv1d(in_channels=c_in, out_channels=d_model,
+                                    kernel_size=1, padding=padding, padding_mode='circular')
+        self.tokenConv2 = nn.Conv1d(in_channels=c_in, out_channels=d_model,
+                                    kernel_size=2, padding=padding, padding_mode='circular')
+        self.tokenConv3 = nn.Conv1d(in_channels=c_in, out_channels=d_model,
+                                    kernel_size=3, padding=padding, padding_mode='circular')
+
+        self.linear = nn.Linear(d_model, d_model, bias=True)
         for m in self.modules():
             if isinstance(m, nn.Conv1d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_in', nonlinearity='leaky_relu')
 
     def forward(self, x):
-        x = self.tokenConv(x.permute(0, 2, 1)).transpose(1, 2)
+        x1 = self.tokenConv1(x.permute(0, 2, 1))[:, :, :-2].contiguous()
+        x2 = self.tokenConv2(x.permute(0, 2, 1))[:, :, :-1]
+        x3 = self.tokenConv3(x.permute(0, 2, 1)).contiguous()
+        x = (x1 + x2 + x3) / 3
+        x = x.transpose(1, 2)
+        x = self.linear(x)
         return x
 
 
@@ -110,7 +121,7 @@ class TimeFeatureEmbedding(nn.Module):
 
 
 class DataEmbedding(nn.Module):
-    def __init__(self, c_in, d_model, embed_type='fixed', freq='h', dropout=0.1):
+    def __init__(self, c_in, d_model, adj, embed_type='fixed', freq='h', dropout=0.1):
         super(DataEmbedding, self).__init__()
 
         self.value_embedding = TokenEmbedding(c_in=c_in, d_model=d_model)

@@ -26,8 +26,8 @@ class Informer(nn.Module):
         self.node_category = node_category
 
         # Encoding
-        self.enc_embedding = DataEmbedding(enc_in, d_model, embed, freq, dropout)
-        self.dec_embedding = DataEmbedding(dec_in, d_model, embed, freq, dropout)
+        self.enc_embedding = DataEmbedding(enc_in, d_model, adj, embed, freq, dropout)
+        self.dec_embedding = DataEmbedding(dec_in, d_model, adj, embed, freq, dropout)
 
         # Attention
         Attn = ProbAttention if attn == 'prob' else FullAttention
