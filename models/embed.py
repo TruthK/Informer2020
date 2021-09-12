@@ -38,11 +38,12 @@ class TokenEmbedding(nn.Module):
         super(TokenEmbedding, self).__init__()
         padding = 1 if torch.__version__ >= '1.5.0' else 2
         self.tokenConv1 = nn.Conv1d(in_channels=c_in, out_channels=d_model,
-                                    kernel_size=1, padding=padding, padding_mode='circular')
+                                    kernel_size=2, padding=1, dilation=2, padding_mode='circular')
         self.tokenConv2 = nn.Conv1d(in_channels=c_in, out_channels=d_model,
-                                    kernel_size=2, padding=padding, padding_mode='circular')
+                                    kernel_size=7, padding=12, dilation=4, padding_mode='circular')
         self.tokenConv3 = nn.Conv1d(in_channels=c_in, out_channels=d_model,
-                                    kernel_size=3, padding=padding, padding_mode='circular')
+                                    kernel_size=3, padding=3, dilation=3,
+                                    padding_mode='circular')
 
         self.linear = nn.Linear(d_model, d_model, bias=True)
         for m in self.modules():
@@ -50,8 +51,8 @@ class TokenEmbedding(nn.Module):
                 nn.init.kaiming_normal_(m.weight, mode='fan_in', nonlinearity='leaky_relu')
 
     def forward(self, x):
-        x1 = self.tokenConv1(x.permute(0, 2, 1))[:, :, :-2].contiguous()
-        x2 = self.tokenConv2(x.permute(0, 2, 1))[:, :, :-1]
+        x1 = self.tokenConv1(x.permute(0, 2, 1)).contiguous()
+        x2 = self.tokenConv2(x.permute(0, 2, 1)).contiguous()
         x3 = self.tokenConv3(x.permute(0, 2, 1)).contiguous()
         x = (x1 + x2 + x3) / 3
         x = x.transpose(1, 2)
@@ -121,7 +122,7 @@ class TimeFeatureEmbedding(nn.Module):
 
 
 class DataEmbedding(nn.Module):
-    def __init__(self, c_in, d_model, adj, embed_type='fixed', freq='h', dropout=0.1):
+    def __init__(self, c_in, d_model, embed_type='fixed', freq='h', dropout=0.1):
         super(DataEmbedding, self).__init__()
 
         self.value_embedding = TokenEmbedding(c_in=c_in, d_model=d_model)

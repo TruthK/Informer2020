@@ -29,14 +29,29 @@
 # out = my_batch_mul(a, b)
 #
 # print("is np_out == torch_ein_out ?", torch.allclose(torch_ein_out, out))
+import numpy as np
 
 from utils.tools import *
 import pandas as pd
 import warnings
 import torch
 import random
+import numpy as np
 
 df = pd.read_csv('data/electricity/electricity.csv')
-n = df[df.columns[1:]].applymap(lambda x: x if random.randint(0, 100) > 5 else -1)
-df = pd.concat([df[df.columns[0]], n], axis=1)
-df.to_csv('data/electricity/electricity_miss.csv', index=False)
+cols_name=df.columns.values.tolist()
+# rnd = np.random.RandomState(666)  # 定义一个随机数种子
+# n_samples_missing = int(df.shape[0] * 0.1)  # 大概有30%的数据将要被我们擦除掉。计算出要擦除的个数
+# print('we will drop {} values.'.format(n_samples_missing))
+
+# missing_samples_list = rnd.randint(low=0, high=df.shape[0] - 1, size=n_samples_missing)
+
+# res = df[df.columns[1:]].values
+# print(missing_samples_list)
+# res[missing_samples_list] = np.NaN
+n = df[df.columns[1:]].applymap(lambda x: x if random.randint(0, 100) > 10 else np.NaN)
+# res = pd.DataFrame(res)
+df_res = pd.concat([df[df.columns[0]], n], axis=1)
+df_res.columns = cols_name
+print(df_res)
+df_res.to_csv('data/electricity/electricity_miss_10.csv', index=False)

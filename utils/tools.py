@@ -10,8 +10,8 @@ import torch.nn.functional as F
 # alpha 激活阈值
 def generate_adaptive_matrix(dataframe, alpha, remove_col=None):
     adj, dim = NMI_matrix(dataframe, remove_col)
-    # 对角线为0
-    adj.values[[np.arange(adj.shape[0])] * 2] = 0
+    # # 对角线为0
+    # adj.values[[np.arange(adj.shape[0])] * 2] = 0
     adj = torch.tensor(np.array(adj))
     adj = F.relu(adj)
     zero = torch.zeros_like(adj)
@@ -113,6 +113,7 @@ class StandardScaler():
         mean = torch.from_numpy(self.mean).type_as(data).to(data.device) if torch.is_tensor(data) else self.mean
         std = torch.from_numpy(self.std).type_as(data).to(data.device) if torch.is_tensor(data) else self.std
         return (data * std) + mean
+
 
 def init_seed(seed):
     """Disable cudnn to maximize reproducibility 禁用cudnn以最大限度地提高再现性"""

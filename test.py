@@ -1,7 +1,8 @@
-import math
-import torch.nn.functional as F
+from utils.tools import *
 
-import torch
+import pandas as pd
 
-for i in range(1, len([5,2,76])):
-    print(i)
+# NMI_matrix(pd.read_csv("data/traffic/traffic.csv"), 'date')
+d = NMI_matrix(pd.read_csv("data/electricity/electricity.csv"), 'date')
+print(d[0])
+d[0].to_csv("data/electricity/electricity_NMI.csv", index=False)

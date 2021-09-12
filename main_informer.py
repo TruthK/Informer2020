@@ -93,6 +93,7 @@ data_parser = {
     'Solar': {'data': 'solar_AL.csv', 'T': 'FM', 'M': [137, 137, 137], 'S': [1, 1, 1], 'MS': [137, 137, 1]},
     'Traffic': {'data': 'traffic.csv', 'T': 'BLX', 'M': [862, 862, 862], 'S': [1, 1, 1], 'MS': [862, 862, 1]},
     'Exchange': {'data': 'exchange_rate.csv', 'T': 'AI', 'M': [8, 8, 8], 'S': [1, 1, 1], 'MS': [8, 8, 1]},
+    'Iot': {'data': 'HomeIot.csv', 'T': 'Solar', 'M': [18, 18, 18], 'S': [1, 1, 1], 'MS': [18, 18, 1]},
 }
 if args.data in data_parser.keys():
     data_info = data_parser[args.data]

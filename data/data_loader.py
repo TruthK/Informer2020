@@ -62,7 +62,7 @@ class Dataset_ETT_hour(Dataset):
             df_miss_data = df_miss_raw[cols_data]
         elif self.features == 'S':
             df_data = df_raw[[self.target]]
-
+            df_miss_data = df_miss_raw[[self.target]]
         if self.scale:
             train_data = df_data[border1s[0]:border2s[0]]
             train_miss_data = df_miss_data[border1s[0]:border2s[0]]
@@ -159,6 +159,8 @@ class Dataset_ETT_minute(Dataset):
             df_miss_data = df_miss_raw[cols_data]
         elif self.features == 'S':
             df_data = df_raw[[self.target]]
+            df_miss_data = df_miss_raw[[self.target]]
+
 
         if self.scale:
             train_data = df_data[border1s[0]:border2s[0]]

@@ -7,6 +7,7 @@ from models.encoder import Encoder, EncoderLayer, ConvLayer, EncoderStack
 from models.decoder import Decoder, DecoderLayer
 from models.attn import FullAttention, ProbAttention, AttentionLayer
 from models.embed import DataEmbedding
+from models.mixprop import *
 
 
 class Informer(nn.Module):
@@ -26,8 +27,9 @@ class Informer(nn.Module):
         self.node_category = node_category
 
         # Encoding
-        self.enc_embedding = DataEmbedding(enc_in, d_model, adj, embed, freq, dropout)
-        self.dec_embedding = DataEmbedding(dec_in, d_model, adj, embed, freq, dropout)
+        self.imp = imp(enc_in, adj)
+        self.enc_embedding = DataEmbedding(enc_in, d_model, embed, freq, dropout)
+        self.dec_embedding = DataEmbedding(dec_in, d_model, embed, freq, dropout)
 
         # Attention
         Attn = ProbAttention if attn == 'prob' else FullAttention
@@ -75,11 +77,13 @@ class Informer(nn.Module):
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec,
                 enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
+        x_enc = self.imp(x_enc)+x_enc
         enc_out = self.enc_embedding(x_enc, x_mark_enc)
         enc_out, attns = self.encoder(enc_out, attn_mask=enc_self_mask)
 
         dec_out = self.dec_embedding(x_dec, x_mark_dec)
         dec_out = self.decoder(dec_out, enc_out, x_mask=dec_self_mask, cross_mask=dec_enc_mask)
+
         dec_out = self.projection(dec_out)
 
         # dec_out = self.end_conv1(dec_out)

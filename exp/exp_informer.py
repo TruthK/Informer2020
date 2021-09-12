@@ -4,7 +4,7 @@ from data.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custo
 from exp.exp_basic import Exp_Basic
 from models.model import *
 
-from utils.tools import EarlyStopping, adjust_learning_rate, generate_adaptive_matrix
+from utils.tools import *
 from utils.metrics import metric
 
 import numpy as np
@@ -27,11 +27,13 @@ class Exp_Informer(Exp_Basic):
         super(Exp_Informer, self).__init__(args)
 
     def _build_model(self):
-        df = pd.read_csv(os.path.join(self.args.root_path, self.args.data_path))
-        df = df.sample(10000)
-        self.adj = generate_adaptive_matrix(df, 0.3, 'date')
-        # self.adj=None
-        print(self.adj)
+        file_name_array = (self.args.data_path).split(".")
+        NMI_csv = ".".join([file_name_array[0] + "_NMI", file_name_array[1]])
+        self.adj = pd.read_csv(os.path.join(self.args.root_path,
+                                            NMI_csv)).values
+
+        self.adj = torch.from_numpy(self.adj)
+        print(self.adj.shape)
         model_dict = {
             'informer': Informer
         }
@@ -81,26 +83,27 @@ class Exp_Informer(Exp_Basic):
             'Solar': Dataset_Custom,
             'Traffic': Dataset_Custom,
             'Exchange': Dataset_Custom,
+            'Iot': Dataset_Custom,
             'custom': Dataset_Custom,
         }
         Data = data_dict[self.args.data]
         timeenc = 0 if args.embed != 'timeF' else 1
 
         if flag == 'test':
-            shuffle_flag = False;
-            drop_last = True;
-            batch_size = args.batch_size;
+            shuffle_flag = False
+            drop_last = True
+            batch_size = args.batch_size
             freq = args.freq
         elif flag == 'pred':
-            shuffle_flag = False;
-            drop_last = False;
-            batch_size = 1;
+            shuffle_flag = False
+            drop_last = False
+            batch_size = 1
             freq = args.detail_freq
             Data = Dataset_Pred
         else:
-            shuffle_flag = True;
-            drop_last = True;
-            batch_size = args.batch_size;
+            shuffle_flag = True
+            drop_last = True
+            batch_size = args.batch_size
             freq = args.freq
         data_set = Data(
             root_path=args.root_path,
