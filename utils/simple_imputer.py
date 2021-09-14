@@ -5,9 +5,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn import metrics
 
 imp = SimpleImputer(missing_values=np.nan, strategy='mean')
-df = pd.read_csv("../data/electricity/electricity_miss_10.csv", header=None)
+df = pd.read_csv("../data/traffic/traffic_10_knn.csv", header=None)
 
-df_orgin = pd.read_csv("../data/electricity/electricity.csv", header=None)
+df_orgin = pd.read_csv("../data/traffic/traffic.csv", header=None)
 
 ss = StandardScaler()
 orgin_data = df_orgin.iloc[1:, 1:].values
@@ -26,4 +26,4 @@ res = pd.DataFrame(res)
 date = pd.DataFrame(df_orgin[df_orgin.columns[0]][1:].values)
 res = pd.concat([date, res], axis=1)
 res.columns = df_orgin.iloc[0].values
-res.to_csv("../data/electricity/electricity_10_simple.csv", index=False)
+res.to_csv("../data/traffic/traffic_10_knn_miss.csv", index=False)

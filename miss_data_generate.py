@@ -38,7 +38,7 @@ import torch
 import random
 import numpy as np
 
-df = pd.read_csv('data/electricity/electricity.csv')
+df = pd.read_csv('data/traffic/traffic_knn.csv')
 cols_name=df.columns.values.tolist()
 # rnd = np.random.RandomState(666)  # 定义一个随机数种子
 # n_samples_missing = int(df.shape[0] * 0.1)  # 大概有30%的数据将要被我们擦除掉。计算出要擦除的个数
@@ -54,4 +54,4 @@ n = df[df.columns[1:]].applymap(lambda x: x if random.randint(0, 100) > 10 else 
 df_res = pd.concat([df[df.columns[0]], n], axis=1)
 df_res.columns = cols_name
 print(df_res)
-df_res.to_csv('data/electricity/electricity_miss_10.csv', index=False)
+df_res.to_csv('data/traffic/traffic_10_knn.csv', index=False)

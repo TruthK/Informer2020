@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch.nn import init
 import numbers
 import torch.nn.functional as F
+from models.GCN import *
 
 
 class nconv(nn.Module):
@@ -19,8 +20,7 @@ class nconv(nn.Module):
 class linear(nn.Module):
     def __init__(self, c_in, c_out, bias=True):
         super(linear, self).__init__()
-        self.mlp = torch.nn.Conv1d(c_in, c_out, kernel_size=3, padding=2, dilation=2, padding_mode='circular',
-                                   bias=bias)
+        self.mlp = torch.nn.Conv1d(c_in, c_out, kernel_size=3, padding=2, dilation=2, padding_mode='circular')
 
     def forward(self, x):
         x = x.permute(0, 2, 1)
@@ -59,13 +59,14 @@ class imp(nn.Module):
         super(imp, self).__init__()
         self.adj = adj
         self.mlp = linear(c_in, c_in)
-        self.lin = nn.Linear(c_in, c_in, bias=True)
+        self.lin = nn.Linear(c_in, c_in)
+
 
     def forward(self, x):
         self.adj = self.adj.float().to(x.device)
-        x = torch.tanh(x)
-        x = self.mlp(x)
         x = x.permute(0, 2, 1)
         x = torch.einsum('cwl,vw->cvl', (x, self.adj))
+        x = torch.tanh(x)
         x = x.transpose(1, 2)
+        x = self.mlp(x)
         return self.lin(x)
